@@ -37,7 +37,7 @@
 #define FASTLZ_PYTHON_MODULE_VERSION "0.1"
 #include <Python.h>
 #include "fastlz.h"
-
+#define DEBUG
 
 /*
  * Ensure we have the updated fastlz version
@@ -773,9 +773,10 @@ compress(PyObject *self, PyObject *args)
     int osize;
     if (!PyArg_ParseTuple(args, "s#|i", &input, &length, &level))
         return NULL;
+#if defined(DEBUG)
+	printf("input : %s, length : %d, level : %d\n", input, length, level);
+#endif
     if (length < 0)
-        return NULL;
-    if (level != -1 || level != 1 || level != 2)
         return NULL;
     output = (unsigned char *) malloc(sizeof(unsigned char)
                                       * (length * 6 / 5));
@@ -783,11 +784,18 @@ compress(PyObject *self, PyObject *args)
     if (output == NULL)
         return NULL;
 
-    if (level == -1) {
+    if ((level != 1) || (level != 2)) {
+#if defined(DEBUG)
+		printf("in compressing\n");
         osize = fastlz_compress(input, length, output);
+		printf("osize : %d\n", osize);
+#endif
     } else {
+#if defined(DEBUG)
         osize = fastlz_compress_level(level, input, length, output);
-    }
+		printf("osize : %d\n", osize);
+#endif
+	}
     result = Py_BuildValue("s#", output, osize);
     free(output);
     return result;
@@ -822,15 +830,23 @@ decompress(PyObject *self, PyObject *args)
     unsigned int osize;
     if (!PyArg_ParseTuple(args, "s#", &input, &isize))
         return NULL;
+#if defined(DEBUG)
+	printf("input : %s, isize : %d\n", input, isize);
+#endif
     output = (unsigned char *)malloc(sizeof(unsigned char)
                                      *(isize * 6 / 5));
     if (output == NULL) {
         return NULL;
     }
+#if defined(DEBUG)
+	printf("in decompressing\n");
     osize = fastlz_decompress(input, isize, output, isize * 6 / 5);
+	printf("osize : %d\n", osize);
+#endif
     result = Py_BuildValue("s#", output, osize);
     return result;
 }
+
 static PyObject *
 _pack_file(PyObject *self, PyObject *args)
 {
