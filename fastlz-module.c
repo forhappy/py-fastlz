@@ -782,7 +782,7 @@ compress(PyObject *self, PyObject *args)
                                       * (length * 6 / 5));
 
     if (output == NULL)
-        return NULL;
+        return PyErr_NoMemory();
 
     if ((level != 1) || (level != 2)) {
 #if defined(DEBUG)
@@ -836,7 +836,7 @@ decompress(PyObject *self, PyObject *args)
     output = (unsigned char *)malloc(sizeof(unsigned char)
                                      *(isize * 6 / 5));
     if (output == NULL) {
-        return NULL;
+        return PyErr_NoMemory();
     }
 #if defined(DEBUG)
 	printf("in decompressing\n");
@@ -894,6 +894,8 @@ initfastlz(void)
 
     dict = PyModule_GetDict(m);
 
+	FastlzError = PyErr_NewExecption("fastlz.error", NULL, NULL);
+	PyDict_SetItemString(dict, "error", FastlzError);
 
     v = PyString_FromString("Fu Haiping <email:haipingf@gmail.com>");
     PyDict_SetItemString(dict, "__author__", v);
